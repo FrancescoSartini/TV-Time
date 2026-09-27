@@ -1,5 +1,5 @@
 // Service worker: salva solo i file dell'app (meno di 1 MB), non le immagini delle serie.
-const VERSION = 'puntate-v1';
+const VERSION = 'puntate-v2';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -2,7 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Puntate">
 <meta name="theme-color" content="#12121a">
 <title>Puntate</title>
 <link rel="manifest" href="manifest.json">
@@ -15,11 +19,12 @@
   --r:14px; --safe-b:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden;max-width:100%;overscroll-behavior-x:none;-webkit-text-size-adjust:100%}
+body{touch-action:pan-y}
 body{padding-bottom:calc(70px + var(--safe-b))}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 img{display:block}
-header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;gap:10px}
 header.top h1{font-size:22px;margin:0;flex:1}
 main{padding:0 16px 16px}
 .empty{color:var(--muted);text-align:center;padding:40px 16px}
@@ -50,13 +55,13 @@ nav.tabs button.on{color:var(--accent)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
 .chip{padding:6px 12px;border-radius:20px;background:var(--card);color:var(--muted);font-size:13px;white-space:nowrap}
 .chip.on{background:var(--accent2);color:#fff}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.tile{position:relative;text-align:left}
-.tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:var(--card2)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{position:relative;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;padding:0;min-width:0;width:100%}
+.tile img,.tile .noimg{width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:var(--card2)}
 .noimg{display:grid;place-items:center;color:var(--muted);font-size:12px;padding:6px;text-align:center}
 .tile .t{font-size:12px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .bar{margin-top:4px}
-.badge{position:absolute;top:6px;left:6px;font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.7)}
+.badge{position:absolute;top:6px;left:6px;right:auto;max-width:calc(100% - 12px);font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge.done{background:var(--ok);color:#000}
 
 /* ricerca */
@@ -97,21 +102,22 @@ nav.tabs button.on{color:var(--accent)}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 
 /* pagina serie */
-#detail{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;display:none;padding-bottom:calc(30px + var(--safe-b))}
+#detail{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;display:none;padding-bottom:calc(30px + var(--safe-b))}
 #detail.open{display:block}
-.hero{position:relative;padding:16px;display:flex;gap:14px;align-items:flex-end;min-height:190px}
+.hero{position:relative;overflow:hidden;padding:calc(56px + env(safe-area-inset-top,0px)) 16px 16px;display:flex;gap:14px;align-items:flex-end;min-height:190px}
 .hero .bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) brightness(.35);transform:scale(1.2)}
 .hero > *:not(.bg){position:relative}
 .hero .poster{width:100px}
-.hero h2{margin:0 0 4px;font-size:21px}
+.hero > div:last-child{min-width:0;flex:1}
+.hero h2{margin:0 0 4px;font-size:21px;overflow-wrap:anywhere}
 .hero .meta{color:#c9c9d8;font-size:13px}
-.back{position:absolute!important;top:12px;left:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:2}
-.dbody{padding:0 16px}
+.back{position:absolute!important;top:calc(12px + env(safe-area-inset-top,0px));left:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:2}
+.dbody{padding:0 16px;max-width:100%}
 .summary{color:#c9c9d8;font-size:14px;margin:12px 0}
 .summary.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .season{background:var(--card);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
 .shead{display:flex;align-items:center;gap:10px;padding:12px 14px;width:100%;text-align:left}
-.shead .st{flex:1}
+.shead .st{flex:1;min-width:0}
 .shead .st small{display:block;color:var(--muted);font-size:12px}
 .shead .arrow{transition:transform .2s;color:var(--muted)}
 .season.open .arrow{transform:rotate(90deg)}
