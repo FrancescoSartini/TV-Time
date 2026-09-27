@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12121a">
+<title>Puntate</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#12121a; --card:#1c1c28; --card2:#262636; --line:#2f2f42;
+  --text:#f1f1f6; --muted:#9a9ab0; --accent:#8b6cff; --accent2:#6d4aff; --ok:#3ecf8e; --warn:#ffb547;
+  --r:14px; --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:calc(70px + var(--safe-b))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+img{display:block}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px}
+header.top h1{font-size:22px;margin:0;flex:1}
+main{padding:0 16px 16px}
+.empty{color:var(--muted);text-align:center;padding:40px 16px}
+.empty b{display:block;color:var(--text);font-size:17px;margin-bottom:6px}
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 0 10px}
+
+/* barra in basso */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;background:#16161f;border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+nav.tabs button{flex:1;padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted)}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button.on{color:var(--accent)}
+
+/* card serie in "Da vedere" */
+.next{display:flex;gap:12px;background:var(--card);border-radius:var(--r);padding:10px;margin-bottom:10px;align-items:center}
+.poster{width:62px;aspect-ratio:2/3;border-radius:8px;object-fit:cover;background:var(--card2);flex:none}
+.next .info{flex:1;min-width:0}
+.next .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.next .ep{color:var(--accent);font-size:13px;margin-top:2px}
+.next .eptitle{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:4px;background:var(--card2);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.left{font-size:12px;color:var(--muted);margin-top:4px}
+.check{width:44px;height:44px;border-radius:50%;border:2px solid var(--accent);display:grid;place-items:center;flex:none;color:var(--accent)}
+.check svg{width:22px;height:22px}
+.check:active{background:var(--accent);color:#fff}
+
+/* griglia serie */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.chip{padding:6px 12px;border-radius:20px;background:var(--card);color:var(--muted);font-size:13px;white-space:nowrap}
+.chip.on{background:var(--accent2);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{position:relative;text-align:left}
+.tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:var(--card2)}
+.noimg{display:grid;place-items:center;color:var(--muted);font-size:12px;padding:6px;text-align:center}
+.tile .t{font-size:12px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .bar{margin-top:4px}
+.badge{position:absolute;top:6px;left:6px;font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.7)}
+.badge.done{background:var(--ok);color:#000}
+
+/* ricerca */
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:0 12px;margin-bottom:14px}
+.search input{flex:1;background:none;border:0;color:var(--text);font:inherit;font-size:16px;padding:12px 0;outline:none}
+.result{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;width:100%;text-align:left}
+.result .poster{width:52px}
+.result .info{flex:1;min-width:0}
+.result .meta{color:var(--muted);font-size:13px}
+.btn{background:var(--accent2);color:#fff;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px}
+.btn.ghost{background:var(--card2);color:var(--text)}
+.btn.danger{background:#3a1f28;color:#ff7a90}
+.btn.small{padding:6px 10px;font-size:13px}
+
+/* calendario */
+.day{margin-bottom:16px}
+.day h3{font-size:14px;margin:0 0 8px;color:var(--accent)}
+.cal{display:flex;gap:10px;align-items:center;background:var(--card);border-radius:12px;padding:8px;margin-bottom:6px;width:100%;text-align:left}
+.cal .poster{width:40px}
+.cal .meta{color:var(--muted);font-size:13px}
+
+/* statistiche */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:var(--r);padding:14px}
+.stat .v{font-size:26px;font-weight:700}
+.stat .l{color:var(--muted);font-size:12px}
+.stat.wide{grid-column:1/-1}
+.hbar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
+.hbar span:first-child{width:110px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .track{flex:1;height:10px;background:var(--card2);border-radius:6px;overflow:hidden}
+.hbar .track i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.hbar b{width:34px;text-align:right;font-weight:600}
+.months{display:flex;align-items:flex-end;gap:4px;height:110px;padding-top:10px}
+.months div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--muted);gap:3px}
+.months i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-top:10px}
+.card p{color:var(--muted);font-size:13px;margin:4px 0 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* pagina serie */
+#detail{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;display:none;padding-bottom:calc(30px + var(--safe-b))}
+#detail.open{display:block}
+.hero{position:relative;padding:16px;display:flex;gap:14px;align-items:flex-end;min-height:190px}
+.hero .bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) brightness(.35);transform:scale(1.2)}
+.hero > *:not(.bg){position:relative}
+.hero .poster{width:100px}
+.hero h2{margin:0 0 4px;font-size:21px}
+.hero .meta{color:#c9c9d8;font-size:13px}
+.back{position:absolute!important;top:12px;left:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:2}
+.dbody{padding:0 16px}
+.summary{color:#c9c9d8;font-size:14px;margin:12px 0}
+.summary.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.season{background:var(--card);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.shead{display:flex;align-items:center;gap:10px;padding:12px 14px;width:100%;text-align:left}
+.shead .st{flex:1}
+.shead .st small{display:block;color:var(--muted);font-size:12px}
+.shead .arrow{transition:transform .2s;color:var(--muted)}
+.season.open .arrow{transform:rotate(90deg)}
+.eps{display:none;border-top:1px solid var(--line)}
+.season.open .eps{display:block}
+.eprow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.eprow:last-child{border-bottom:0}
+.eprow .n{color:var(--muted);font-size:12px;width:34px;flex:none}
+.eprow .et{flex:1;min-width:0}
+.eprow .et div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eprow .et small{color:var(--muted);font-size:12px}
+.tick{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:transparent}
+.tick svg{width:18px;height:18px}
+.tick.on{background:var(--ok);border-color:var(--ok);color:#000}
+.tick:disabled{opacity:.3}
+.sall{font-size:12px;color:var(--accent);padding:6px 8px}
+
+/* finestre di conferma e avvisi */
+#sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
+#sheet.open{display:flex}
+#sheet .box{background:var(--card);width:100%;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + var(--safe-b))}
+#sheet h4{margin:0 0 6px;font-size:17px}
+#sheet p{margin:0 0 16px;color:var(--muted)}
+#sheet .row button{flex:1;padding:12px}
+#toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-b));transform:translateX(-50%);background:#2d2d42;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+.spin{width:28px;height:28px;border:3px solid var(--card2);border-top-color:var(--accent);border-radius:50%;animation:s .8s linear infinite;margin:30px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+.credit{color:var(--muted);font-size:11px;text-align:center;margin-top:24px}
+.credit a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="top"><h1 id="title">Da vedere</h1></header>
+<main id="view"></main>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="next" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 4 20 12 6 20 6 4"/></svg>Da vedere</button>
+  <button data-tab="shows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>Le mie serie</button>
+  <button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Cerca</button>
+  <button data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Uscite</button>
+  <button data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistiche</button>
+</nav>
+
+<div id="detail"></div>
+<div id="sheet"><div class="box" id="sheetbox"></div></div>
+<div id="toast"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+/* =====================================================================
+   DATI
+   Sul telefono salviamo solo: le serie che segui (con l'elenco compatto
+   degli episodi, per funzionare anche offline) e gli episodi visti.
+   ===================================================================== */
+const API = 'https://api.tvmaze.com';
+const KEY = 'puntate-data-v1';
+const REFRESH_MS = 12 * 3600 * 1000; // aggiorna le serie in corso ogni 12 ore
+
+let db = load();
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.shows && d.watched) return d; }catch(e){}
+  return { v:1, shows:{}, watched:{} };
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch(e){ toast('Impossibile salvare: memoria del browser piena'); }
+}
+// Chiede al browser di non cancellare i dati in automatico
+if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+
+/* ----- utilità ----- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.trim(); };
+const pad = n => String(n).padStart(2,'0');
+const code = (s,n) => `S${pad(s)}E${pad(n)}`;
+const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const fmtDate = (d, opt={day:'numeric',month:'short',year:'numeric'}) => new Date(d).toLocaleDateString('it-IT', opt);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2200); }
+
+function sheet(title, text, buttons){
+  return new Promise(res => {
+    $('#sheetbox').innerHTML = `<h4>${esc(title)}</h4><p>${esc(text)}</p><div class="row">${
+      buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>`;
+    $('#sheet').classList.add('open');
+    const done = v => { $('#sheet').classList.remove('open'); $('#sheet').onclick = null; res(v); };
+    $('#sheet').onclick = e => {
+      if(e.target.id === 'sheet') return done(null);
+      const b = e.target.closest('[data-i]'); if(b) done(buttons[+b.dataset.i].value);
+    };
+  });
+}
+
+/* ----- chiamate a TVmaze ----- */
+async function api(path){
+  for(let i=0;i<3;i++){
+    const r = await fetch(API + path);
+    if(r.status === 429){ await sleep(1500*(i+1)); continue; } // troppe richieste: riprova
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+  throw new Error('Troppe richieste, riprova tra poco');
+}
+function compactShow(s){
+  const eps = ((s._embedded && s._embedded.episodes) || [])
+    .filter(e => e.season != null && e.number != null)
+    .map(e => [e.id, e.season, e.number, e.airstamp || (e.airdate ? e.airdate+'T20:00:00Z' : ''), e.runtime || s.averageRuntime || s.runtime || 0, e.name || '']);
+  return {
+    id: s.id, name: s.name,
+    img: s.image ? s.image.medium : '',
+    status: s.status, genres: s.genres || [],
+    net: (s.network && s.network.name) || (s.webChannel && s.webChannel.name) || '',
+    year: s.premiered ? s.premiered.slice(0,4) : '',
+    summary: strip(s.summary),
+    eps, fetched: Date.now()
+  };
+}
+async function fetchShow(id){ return compactShow(await api(`/shows/${id}?embed=episodes`)); }
+
+/* ----- logica episodi ----- */
+const EP = { id:0, s:1, n:2, air:3, rt:4, name:5 };
+const aired = e => e[EP.air] && new Date(e[EP.air]).getTime() <= Date.now();
+const isW = id => !!db.watched[id];
+
+function progress(show){
+  const airedEps = show.eps.filter(aired);
+  const seen = airedEps.filter(e => isW(e[EP.id])).length;
+  const next = airedEps.find(e => !isW(e[EP.id])) || null;
+  const anySeen = show.eps.some(e => isW(e[EP.id]));
+  let state;
+  if(!anySeen) state = 'new';
+  else if(next) state = 'watching';
+  else if(show.status === 'Ended') state = 'done';
+  else state = 'uptodate';
+  const lastAct = Math.max(0, ...show.eps.map(e => db.watched[e[EP.id]] || 0), show.added || 0);
+  return { total: airedEps.length, seen, left: airedEps.length - seen, next, state, lastAct };
+}
+const STATE_LABEL = { new:'Da iniziare', watching:'In corso', uptodate:'In pari', done:'Completata' };
+const STATUS_IT = { 'Running':'In onda', 'Ended':'Conclusa', 'To Be Determined':'In attesa di rinnovo', 'In Development':'In sviluppo' };
+
+function setWatched(ids, on){
+  const t = Date.now();
+  ids.forEach(id => { if(on) db.watched[id] = db.watched[id] || t; else delete db.watched[id]; });
+  save();
+}
+async function markEpisode(show, ep, on){
+  if(on){
+    const prev = show.eps.filter(e => aired(e) && !isW(e[EP.id]) &&
+      (e[EP.s] < ep[EP.s] || (e[EP.s] === ep[EP.s] && e[EP.n] < ep[EP.n])));
+    if(prev.length){
+      const ans = await sheet('Episodi precedenti', `Ci sono ${prev.length} episodi precedenti non ancora segnati. Li segno come visti?`,
+        [{label:'Solo questo', value:'one', cls:'ghost'}, {label:'Segna tutti', value:'all'}]);
+      if(ans === null) return false;
+      if(ans === 'all') setWatched(prev.map(e => e[EP.id]), true);
+    }
+  }
+  setWatched([ep[EP.id]], on);
+  return true;
+}
+
+async function follow(showData){
+  db.shows[showData.id] = Object.assign(showData, { added: Date.now() });
+  save(); toast(`${showData.name} aggiunta`);
+}
+async function unfollow(show){
+  const ans = await sheet('Rimuovere la serie?', `${show.name} verrà tolta dalle tue serie insieme agli episodi segnati come visti.`,
+    [{label:'Annulla', value:false, cls:'ghost'}, {label:'Rimuovi', value:true, cls:'danger'}]);
+  if(!ans) return false;
+  show.eps.forEach(e => delete db.watched[e[EP.id]]);
+  delete db.shows[show.id]; save(); toast('Serie rimossa');
+  return true;
+}
+
+/* aggiornamento in background delle serie ancora in onda */
+let refreshing = false;
+async function refreshAll(force){
+  if(refreshing || !navigator.onLine) return;
+  refreshing = true;
+  const list = Object.values(db.shows).filter(s => force || (s.status !== 'Ended' && Date.now() - s.fetched > REFRESH_MS));
+  let changed = false;
+  for(const s of list){
+    try{
+      const fresh = await fetchShow(s.id);
+      if(db.shows[s.id]){ db.shows[s.id] = Object.assign(fresh, { added: s.added }); changed = true; }
+    }catch(e){}
+    await sleep(600); // rispetta i limiti di TVmaze
+  }
+  refreshing = false;
+  if(changed){ save(); if(!$('#detail').classList.contains('open')) render(); }
+  if(force) toast(changed ? 'Serie aggiornate' : 'Nessun aggiornamento');
+}
+
+/* =====================================================================
+   SCHERMATE
+   ===================================================================== */
+let tab = 'next', filter = 'all';
+const TITLES = { next:'Da vedere', shows:'Le mie serie', search:'Cerca', cal:'Prossime uscite', stats:'Statistiche' };
+const posterImg = (src, cls='poster') => src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="">` : `<div class="${cls} noimg"></div>`;
+
+function render(){
+  $('#title').textContent = TITLES[tab];
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  ({ next: vNext, shows: vShows, search: vSearch, cal: vCal, stats: vStats })[tab]();
+}
+
+/* ---------- Da vedere ---------- */
+function vNext(){
+  const shows = Object.values(db.shows).map(s => ({ s, p: progress(s) }));
+  const watching = shows.filter(x => x.p.state === 'watching').sort((a,b) => b.p.lastAct - a.p.lastAct);
+  const fresh = shows.filter(x => x.p.state === 'new' && x.p.next).sort((a,b) => b.p.lastAct - a.p.lastAct);
+  if(!shows.length){
+    $('#view').innerHTML = `<div class="empty"><b>Nessuna serie ancora</b>Vai su <u>Cerca</u> e aggiungi le serie che stai guardando.</div>`;
+    return;
+  }
+  const card = ({s,p}) => {
+    const e = p.next, pct = p.total ? Math.round(p.seen/p.total*100) : 0;
+    return `<div class="next" data-show="${s.id}">
+      ${posterImg(s.img)}
+      <div class="info">
+        <div class="name">${esc(s.name)}</div>
+        <div class="ep">${code(e[EP.s], e[EP.n])}</div>
+        <div class="eptitle">${esc(e[EP.name])}</div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="left">${p.left === 1 ? 'Ultimo episodio disponibile' : `Ne mancano ${p.left}`}</div>
+      </div>
+      <button class="check" data-mark="${s.id}" aria-label="Segna come visto">${ICON_CHECK}</button>
+    </div>`;
+  };
+  let h = '';
+  if(watching.length) h += watching.map(card).join('');
+  else h += `<div class="empty"><b>Sei in pari con tutto!</b>Nessun episodio da recuperare.</div>`;
+  if(fresh.length) h += `<div class="section-title">Da iniziare</div>` + fresh.map(card).join('');
+  $('#view').innerHTML = h;
+}
+
+/* ---------- Le mie serie ---------- */
+function vShows(){
+  const all = Object.values(db.shows).map(s => ({ s, p: progress(s) }));
+  if(!all.length){ $('#view').innerHTML = `<div class="empty"><b>Nessuna serie</b>Usa <u>Cerca</u> per aggiungerne una.</div>`; return; }
+  const counts = { all: all.length }; all.forEach(x => counts[x.p.state] = (counts[x.p.state]||0) + 1);
+  const F = [['all','Tutte'],['watching','In corso'],['uptodate','In pari'],['new','Da iniziare'],['done','Completate']];
+  const list = all.filter(x => filter === 'all' || x.p.state === filter).sort((a,b) => a.s.name.localeCompare(b.s.name));
+  $('#view').innerHTML = `<div class="chips">${F.filter(([k]) => counts[k]).map(([k,l]) =>
+      `<button class="chip ${filter===k?'on':''}" data-filter="${k}">${l} · ${counts[k]}</button>`).join('')}</div>
+    <div class="grid">${list.map(({s,p}) => `
+      <button class="tile" data-show="${s.id}">
+        ${s.img ? `<img src="${esc(s.img)}" loading="lazy" alt="">` : `<div class="noimg">${esc(s.name)}</div>`}
+        ${p.state==='done' ? '<span class="badge done">✓ Vista</span>' : p.state==='watching' ? `<span class="badge">${p.left} da vedere</span>` : ''}
+        <div class="t">${esc(s.name)}</div>
+        <div class="bar"><i style="width:${p.total ? p.seen/p.total*100 : 0}%"></i></div>
+      </button>`).join('')}</div>`;
+}
+
+/* ---------- Cerca ---------- */
+let lastQuery = '', lastResults = [], searchT;
+function vSearch(){
+  $('#view').innerHTML = `<div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9ab0" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input id="q" type="search" placeholder="Titolo della serie (es. Doctor Who)" autocomplete="off" value="${esc(lastQuery)}"></div>
+    <div id="results"></div>`;
+  const q = $('#q');
+  q.oninput = () => { clearTimeout(searchT); searchT = setTimeout(() => doSearch(q.value.trim()), 400); };
+  if(lastResults.length) showResults(); else if(!lastQuery) q.focus();
+}
+async function doSearch(q){
+  lastQuery = q;
+  if(q.length < 2){ lastResults = []; $('#results').innerHTML = ''; return; }
+  $('#results').innerHTML = '<div class="spin"></div>';
+  try{
+    const r = await api('/search/shows?q=' + encodeURIComponent(q));
+    if(q !== lastQuery) return;
+    lastResults = r.map(x => x.show); showResults();
+  }catch(e){ $('#results').innerHTML = `<div class="empty">Ricerca non riuscita. Controlla la connessione.</div>`; }
+}
+function showResults(){
+  const el = $('#results'); if(!el) return;
+  if(!lastResults.length){ el.innerHTML = `<div class="empty">Nessun risultato</div>`; return; }
+  el.innerHTML = lastResults.map(s => {
+    const net = (s.network && s.network.name) || (s.webChannel && s.webChannel.name) || '';
+    const has = !!db.shows[s.id];
+    return `<div class="result" data-show="${s.id}">
+      ${posterImg(s.image && s.image.medium)}
+      <div class="info"><div style="font-weight:600">${esc(s.name)}</div>
+        <div class="meta">${[s.premiered && s.premiered.slice(0,4), net, STATUS_IT[s.status]].filter(Boolean).map(esc).join(' · ')}</div></div>
+      ${has ? '<span class="meta" style="color:var(--ok)">✓ Seguita</span>' : `<button class="btn small" data-add="${s.id}">Aggiungi</button>`}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Uscite ---------- */
+function vCal(){
+  const now = Date.now(), limit = now + 60*86400000, t0 = today0().getTime();
+  const items = [];
+  Object.values(db.shows).forEach(s => s.eps.forEach(e => {
+    const t = e[EP.air] ? new Date(e[EP.air]).getTime() : 0;
+    if(t >= t0 - 86400000 && t <= limit) items.push({ s, e, t });
+  }));
+  items.sort((a,b) => a.t - b.t);
+  if(!items.length){
+    $('#view').innerHTML = `<div class="empty"><b>Nessuna uscita in arrivo</b>Qui vedrai i nuovi episodi delle tue serie nei prossimi 60 giorni.</div>`;
+    return;
+  }
+  const groups = {};
+  items.forEach(x => { const d = new Date(x.t); d.setHours(0,0,0,0); (groups[d.getTime()] = groups[d.getTime()] || []).push(x); });
+  const label = k => { const diff = Math.round((k - t0)/86400000);
+    return diff === 0 ? 'Oggi' : diff === 1 ? 'Domani' : diff === -1 ? 'Ieri' :
+      fmtDate(+k, { weekday:'long', day:'numeric', month:'long' }).replace(/^./, c => c.toUpperCase()); };
+  $('#view').innerHTML = Object.keys(groups).map(k => `<div class="day"><h3>${label(+k)}</h3>${groups[k].map(({s,e,t}) => `
+    <button class="cal" data-show="${s.id}">${posterImg(s.img)}
+      <div style="flex:1;min-width:0"><div style="font-weight:600">${esc(s.name)}</div>
+      <div class="meta">${code(e[EP.s],e[EP.n])} · ${esc(e[EP.name])} · ${new Date(t).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div></div>
+      ${isW(e[EP.id]) ? '<span style="color:var(--ok)">✓</span>' : ''}
+    </button>`).join('')}</div>`).join('');
+}
+
+/* ---------- Statistiche ---------- */
+function vStats(){
+  const shows = Object.values(db.shows);
+  const epMap = {}; shows.forEach(s => s.eps.forEach(e => epMap[e[EP.id]] = { s, e }));
+  const seen = Object.keys(db.watched).filter(id => epMap[id]);
+  const minutes = seen.reduce((a,id) => a + (epMap[id].e[EP.rt] || 0), 0);
+  const d = Math.floor(minutes/1440), h = Math.floor(minutes%1440/60), m = minutes%60;
+  const states = shows.map(progress);
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
+  let month = 0, year = 0;
+  const byMonth = Array(12).fill(0);
+  const genres = {}, perShow = {};
+  seen.forEach(id => {
+    const t = new Date(db.watched[id]);
+    if(t.getFullYear() === y){ year++; if(t.getMonth() === mo) month++; }
+    const diff = (y - t.getFullYear())*12 + (mo - t.getMonth());
+    if(diff >= 0 && diff < 12) byMonth[11-diff]++;
+    const s = epMap[id].s;
+    s.genres.forEach(g => genres[g] = (genres[g]||0) + 1);
+    perShow[s.id] = (perShow[s.id]||0) + 1;
+  });
+  const topG = Object.entries(genres).sort((a,b) => b[1]-a[1]).slice(0,6);
+  const topS = Object.entries(perShow).sort((a,b) => b[1]-a[1]).slice(0,5).map(([id,n]) => [db.shows[id].name, n]);
+  const hbars = arr => { const max = Math.max(1, ...arr.map(x => x[1]));
+    return arr.map(([l,v]) => `<div class="hbar"><span>${esc(l)}</span><div class="track"><i style="width:${v/max*100}%"></i></div><b>${v}</b></div>`).join(''); };
+  const mMax = Math.max(1, ...byMonth);
+  const mLabels = byMonth.map((_,i) => new Date(y, mo-11+i, 1).toLocaleDateString('it-IT',{month:'narrow'}));
+  const G_IT = { Drama:'Drammatico', Comedy:'Commedia', 'Science-Fiction':'Fantascienza', Fantasy:'Fantasy', Crime:'Crime', Thriller:'Thriller',
+    Action:'Azione', Adventure:'Avventura', Horror:'Horror', Mystery:'Mistero', Romance:'Romantico', Family:'Famiglia', Anime:'Anime',
+    Supernatural:'Soprannaturale', History:'Storico', War:'Guerra', Medical:'Medico', Legal:'Legale', Music:'Musica', Sports:'Sport',
+    Western:'Western', Espionage:'Spionaggio', Children:'Bambini', Food:'Cucina', Travel:'Viaggi', Nature:'Natura' };
+
+  $('#view').innerHTML = `
+    <div class="stats">
+      <div class="stat wide"><div class="v">${d ? d+'g ' : ''}${h}h ${m}m</div><div class="l">Tempo passato a guardare serie</div></div>
+      <div class="stat"><div class="v">${seen.length}</div><div class="l">Episodi visti</div></div>
+      <div class="stat"><div class="v">${shows.length}</div><div class="l">Serie seguite</div></div>
+      <div class="stat"><div class="v">${month}</div><div class="l">Episodi questo mese</div></div>
+      <div class="stat"><div class="v">${year}</div><div class="l">Episodi nel ${y}</div></div>
+      <div class="stat"><div class="v">${states.filter(p => p.state==='done').length}</div><div class="l">Serie completate</div></div>
+      <div class="stat"><div class="v">${states.filter(p => p.state==='watching').length}</div><div class="l">Serie in corso</div></div>
+    </div>
+    ${seen.length ? `
+    <div class="section-title">Ultimi 12 mesi</div>
+    <div class="card"><div class="months">${byMonth.map((v,i) => `<div><span>${v||''}</span><i style="height:${v/mMax*80}%"></i>${mLabels[i]}</div>`).join('')}</div></div>
+    <div class="section-title">Generi preferiti</div><div class="card">${hbars(topG.map(([g,v]) => [G_IT[g]||g, v]))}</div>
+    <div class="section-title">Serie più viste</div><div class="card">${hbars(topS)}</div>` : ''}
+
+    <div class="section-title">Backup e dati</div>
+    <div class="card"><b>Salva una copia</b>
+      <p>I dati restano solo su questo telefono. Scarica ogni tanto un backup: se cambi telefono o cancelli i dati del browser, lo reimporti e ritrovi tutto.</p>
+      <div class="row"><button class="btn" id="exp">Esporta backup</button><button class="btn ghost" id="imp">Importa backup</button></div>
+    </div>
+    <div class="card"><b>Aggiorna le serie</b>
+      <p>L'app scarica da sola i nuovi episodi ogni 12 ore. Qui puoi forzare l'aggiornamento.</p>
+      <button class="btn ghost" id="ref">Aggiorna ora</button>
+    </div>
+    <div class="credit">Dati di serie ed episodi forniti da <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVmaze</a> (CC BY-SA)</div>`;
+
+  $('#exp').onclick = exportData;
+  $('#imp').onclick = () => $('#importFile').click();
+  $('#ref').onclick = () => { toast('Aggiornamento in corso…'); refreshAll(true); };
+}
+
+/* ---------- Backup ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(db)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `puntate-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$('#importFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if(!d || typeof d.shows !== 'object' || typeof d.watched !== 'object') throw 0;
+    const ans = await sheet('Importare il backup?', `Contiene ${Object.keys(d.shows).length} serie e ${Object.keys(d.watched).length} episodi visti. I dati attuali verranno sostituiti.`,
+      [{label:'Annulla', value:false, cls:'ghost'}, {label:'Importa', value:true}]);
+    if(!ans) return;
+    db = { v:1, shows:d.shows, watched:d.watched }; save(); render(); toast('Backup importato');
+  }catch(err){ toast('File di backup non valido'); }
+};
+
+/* =====================================================================
+   PAGINA DELLA SERIE
+   ===================================================================== */
+let dShow = null, dFollowed = false, openSeasons = new Set();
+
+async function openShow(id){
+  if(!$('#detail').classList.contains('open')) history.pushState({ detail:id }, '');
+  $('#detail').classList.add('open'); $('#detail').scrollTop = 0; document.body.style.overflow = 'hidden';
+  dFollowed = !!db.shows[id];
+  dShow = db.shows[id] || null;
+  openSeasons = new Set();
+  if(dShow) renderDetail(); else $('#detail').innerHTML = backBtn() + '<div class="spin" style="margin-top:120px"></div>';
+  try{
+    const fresh = await fetchShow(id);
+    if(db.shows[id]){ db.shows[id] = Object.assign(fresh, { added: db.shows[id].added }); save(); dShow = db.shows[id]; }
+    else dShow = fresh;
+    if(dShow.id === id) renderDetail();
+  }catch(e){
+    if(!dShow) $('#detail').innerHTML = backBtn() + '<div class="empty" style="margin-top:100px">Impossibile caricare la serie. Controlla la connessione.</div>';
+  }
+}
+const backBtn = () => `<button class="back" id="back" aria-label="Indietro"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>`;
+function closeShow(){ $('#detail').classList.remove('open'); document.body.style.overflow = ''; dShow = null; render(); }
+
+function renderDetail(){
+  const s = dShow, followed = !!db.shows[s.id], p = progress(s);
+  const seasons = {}; s.eps.forEach(e => (seasons[e[EP.s]] = seasons[e[EP.s]] || []).push(e));
+  const nums = Object.keys(seasons).map(Number).sort((a,b) => a-b);
+  // apri in automatico la stagione in cui sei arrivato
+  if(!openSeasons.size && followed && p.next) openSeasons.add(p.next[EP.s]);
+  const totalMin = s.eps.reduce((a,e) => a + (e[EP.rt]||0), 0);
+
+  $('#detail').innerHTML = `
+    <div class="hero">
+      <div class="bg" style="background-image:url('${esc(s.img)}')"></div>
+      ${backBtn()}
+      ${posterImg(s.img)}
+      <div>
+        <h2>${esc(s.name)}</h2>
+        <div class="meta">${[s.year, s.net, STATUS_IT[s.status] || s.status].filter(Boolean).map(esc).join(' · ')}</div>
+        <div class="meta">${nums.length} stagion${nums.length===1?'e':'i'} · ${s.eps.length} episodi${totalMin ? ` · ${Math.round(totalMin/60)} ore` : ''}</div>
+        ${followed ? `<div class="meta" style="color:var(--accent);margin-top:4px">${STATE_LABEL[p.state]} · ${p.seen}/${p.total} visti</div>` : ''}
+      </div>
+    </div>
+    <div class="dbody">
+      ${s.summary ? `<div class="summary clamp" id="sum">${esc(s.summary)}</div>` : ''}
+      <div class="row" style="margin:12px 0 18px">
+        ${followed ? `<button class="btn ghost" id="unf">Rimuovi dalle mie serie</button>` : `<button class="btn" id="fol">+ Aggiungi alle mie serie</button>`}
+      </div>
+      ${nums.map(n => {
+        const eps = seasons[n], air = eps.filter(aired), w = air.filter(e => isW(e[EP.id])).length;
+        const full = air.length && w === air.length;
+        return `<div class="season ${openSeasons.has(n)?'open':''}" data-season="${n}">
+          <div class="shead" data-toggle="${n}">
+            <div class="st">${n === 0 ? 'Speciali' : 'Stagione ' + n}<small>${w}/${eps.length} visti${air.length < eps.length ? ` · ${eps.length-air.length} in arrivo` : ''}</small></div>
+            ${followed && air.length ? `<button class="sall" data-sall="${n}">${full ? 'Togli tutti' : 'Segna tutti'}</button>` : ''}
+            <span class="arrow">›</span>
+          </div>
+          <div class="eps">${eps.map(e => {
+            const a = aired(e), on = isW(e[EP.id]);
+            return `<div class="eprow"><span class="n">E${pad(e[EP.n])}</span>
+              <div class="et"><div>${esc(e[EP.name])}</div><small>${e[EP.air] ? fmtDate(e[EP.air]) : 'Data da annunciare'}${e[EP.rt] ? ` · ${e[EP.rt]} min` : ''}</small></div>
+              ${followed ? `<button class="tick ${on?'on':''}" data-ep="${e[EP.id]}" ${a?'':'disabled'} aria-label="Visto">${ICON_CHECK}</button>` : ''}
+            </div>`; }).join('')}</div>
+        </div>`; }).join('')}
+      <div class="credit">Dati forniti da <a href="https://www.tvmaze.com/shows/${s.id}" target="_blank" rel="noopener">TVmaze</a></div>
+    </div>`;
+}
+
+$('#detail').addEventListener('click', async e => {
+  const s = dShow; if(!s) return;
+  if(e.target.closest('#back')) return history.back();
+  if(e.target.closest('#sum')) return e.target.closest('#sum').classList.toggle('clamp');
+  if(e.target.closest('#fol')){ await follow(s); return renderDetail(); }
+  if(e.target.closest('#unf')){ if(await unfollow(s)) renderDetail(); return; }
+  const sall = e.target.closest('[data-sall]');
+  if(sall){
+    e.stopPropagation();
+    const n = +sall.dataset.sall, air = s.eps.filter(x => x[EP.s] === n && aired(x));
+    const full = air.every(x => isW(x[EP.id]));
+    if(!full){
+      const prev = s.eps.filter(x => aired(x) && x[EP.s] < n && x[EP.s] > 0 && !isW(x[EP.id]));
+      if(prev.length){
+        const ans = await sheet('Stagioni precedenti', `Ci sono ${prev.length} episodi delle stagioni precedenti non ancora segnati. Segno anche quelli?`,
+          [{label:'Solo questa', value:'one', cls:'ghost'}, {label:'Segna tutti', value:'all'}]);
+        if(ans === null) return;
+        if(ans === 'all') setWatched(prev.map(x => x[EP.id]), true);
+      }
+    }
+    setWatched(air.map(x => x[EP.id]), !full);
+    return renderDetail();
+  }
+  const tog = e.target.closest('[data-toggle]');
+  if(tog){ const n = +tog.dataset.toggle; openSeasons.has(n) ? openSeasons.delete(n) : openSeasons.add(n); tog.parentElement.classList.toggle('open'); return; }
+  const t = e.target.closest('[data-ep]');
+  if(t){
+    const ep = s.eps.find(x => x[EP.id] === +t.dataset.ep);
+    if(await markEpisode(s, ep, !isW(ep[EP.id]))) renderDetail();
+  }
+});
+
+/* =====================================================================
+   NAVIGAZIONE
+   ===================================================================== */
+$('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(!b) return; tab = b.dataset.tab; render(); window.scrollTo(0,0); };
+$('#view').addEventListener('click', async e => {
+  const f = e.target.closest('[data-filter]'); if(f){ filter = f.dataset.filter; return render(); }
+  const add = e.target.closest('[data-add]');
+  if(add){
+    e.stopPropagation(); add.disabled = true; add.textContent = '…';
+    try{ await follow(await fetchShow(+add.dataset.add)); showResults(); }
+    catch(err){ toast('Impossibile aggiungere la serie'); add.disabled = false; add.textContent = 'Aggiungi'; }
+    return;
+  }
+  const m = e.target.closest('[data-mark]');
+  if(m){
+    e.stopPropagation();
+    const s = db.shows[m.dataset.mark], p = progress(s);
+    if(p.next){ setWatched([p.next[EP.id]], true); toast(`${code(p.next[EP.s], p.next[EP.n])} visto`); render(); }
+    return;
+  }
+  const sh = e.target.closest('[data-show]'); if(sh) openShow(+sh.dataset.show);
+});
+window.addEventListener('popstate', () => { if($('#sheet').classList.contains('open')) $('#sheet').classList.remove('open'); if($('#detail').classList.contains('open')) closeShow(); });
+
+render();
+setTimeout(() => refreshAll(false), 1500);
+window.addEventListener('online', () => refreshAll(false));
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
